@@ -242,7 +242,7 @@ def chat(id):
     Analyze.analyze_sentiment(user_input,id)
     
     url='http://52.79.225.144:8080/sentiment/getData' # URL 변경 해줘야해요.......
-    json_data = json.dumps(Data.analyze_data[1:])
+    json_data = json.dumps(user_input)
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
     print(json_data)
