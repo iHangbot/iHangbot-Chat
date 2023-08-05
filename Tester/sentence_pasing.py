@@ -3,7 +3,7 @@ import requests
 import json
 import numpy as np
 
-sentence ="나는 배가 고파서 예찬이랑 사과와 배를 먹고 제주도 행 배를 탔다."
+sentence ="너는 뭐 하면서 놀 거야"
 
 okt = Okt()
 CheckSentence = False
