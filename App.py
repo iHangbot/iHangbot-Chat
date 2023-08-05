@@ -35,7 +35,7 @@ def job():
         #키워드 분석 결과 전송
         content_list = [data["content"] for data in Data.conversation[1:]]
         merged_content = "\n".join(content_list)
-        Analyze.extract_keywords(merged_content,"test123")
+        Analyze.extract_keywords(merged_content,id)
         Utils.print_key_word()
         
         url='http://52.79.225.144:8080/keyword/getKeyWord'
@@ -58,7 +58,7 @@ def job():
         content_list = [data["content"] for data in Data.conversation[1:]]
         merged_content = " ".join(content_list)
         try:
-            Analyze.classify_document(merged_content,"test123")
+            Analyze.classify_document(merged_content,id)
             Utils.print_category()
         except Exception as e:
             print("오류 내용 : ", str(e))
@@ -69,7 +69,7 @@ def job():
         print(json_data)
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
-        print(response) # 서버로 부터 응답(response) 받았을 때;;;
+        print(response)
         if response.status_code == 200:  # 요청이 성공했을 경우
             print('데이터 전송 성공')
         else:

@@ -216,8 +216,9 @@ def classify_document(text,id):
     if categories:
         for category in categories:
             name = translate_text(category.name,'en','ko')
+            name = name.replace('/','')
             print(f'category: {name}, confidence: {category.confidence}')
-            Data.Category.append({"category":name , "confidence":category.confidence, "username":id})
+            Data.Category.append({"category":name , "confidence":category.confidence,"date":time, "username":id})
     else:
         print('No categories found.')
 
