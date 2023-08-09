@@ -43,36 +43,83 @@ def analyze_sentiment(content,id):
     print(tagged)
 
     # 태그가 'Adjective' , 'Noun'+'Josa'+'Verb' , 'Noun'+'Verb'인 단어들만 추출
-    adjectives = []
+    adjectives_r = []
     for i in range(len(tagged)) :
         word, tag = tagged[i]
+        adjectives = []
         
         if tag == 'Adjective':
-            adjectives.append(word)
-            CheckSentence = True
-            
-        elif tag == 'Verb' and i > 0 and (tagged[i-1][1] in ('Josa') and tagged[i-2][1] in ['Noun']) :
-            if(i < len(tagged)-1 and (tagged[i+1][1] in ('Verb'))) :
-                adjectives.append(tagged[i-2][0]+tagged[i-1][0] + word +tagged[i+1][0])
-                CheckSentence = True
-            else :
-                adjectives.append(tagged[i-2][0]+tagged[i-1][0] + word)
-                CheckSentence = True
-                
-        elif tag == 'Verb' and i > 0 and (tagged[i-1][1] in ('Noun')) :
-            if(i < len(tagged)-1 and (tagged[i+1][1] in ('Verb'))) :
-                adjectives.append(tagged[i-1][0] + word + tagged[i+1][0])
-                CheckSentence = True
-            else :
+            if i > 0 and (tagged[i-1][1] in ('Adverb','VerbPrefix')) :
+                if(i > 1 and (tagged[i-2][1] in ('Noun') and not(tagged[i-2][0] in ('개','꺼져','뭐')))) :
+                    adjectives.append(tagged[i-2][0]+tagged[i-1][0] + word)
+                    CheckSentence = True
+                elif(i > 2 and (tagged[i-2][1] in ('Josa') and (tagged[i-3][1] in ('Noun')))) :
+                    adjectives.append(tagged[i-3][0]+tagged[i-2][0]+tagged[i-1][0] + word)
+                    CheckSentence = True
+                else :
+                    adjectives.append(tagged[i-1][0] + word)
+                    CheckSentence = True
+                    
+            elif(i > 0 and (tagged[i-1][1] in ('Noun') and not(tagged[i-2][0] in ('개','꺼져','뭐')))) :
                 adjectives.append(tagged[i-1][0] + word)
                 CheckSentence = True
-        elif tag =='Verb' and i > 0 :
-            adjectives.append(word)
-            CheckSentence = True
-    print(adjectives)
-    count = len(adjectives)
+                
+            elif(i > 1 and (tagged[i-1][1] in ('Josa') and (tagged[i-2][1] in ('Noun')))) :
+                adjectives.append(tagged[i-2][0] + tagged[i-1][0] + word)
+                CheckSentence = True
+                
+            else :
+                adjectives.append(word)
+                CheckSentence = True
+                
+                
+        if tag == 'Verb' and not(tagged[i-1][1] in ('Verb')):
+            if (i > 0 and (tagged[i-1][1] in ('Adverb','VerbPrefix'))) :
+                if(i > 1 and (tagged[i-2][1] in ('Noun'))) :
+                    adjectives.append(tagged[i-2][0]+tagged[i-1][0] + word)
+                    CheckSentence = True
+                elif(i > 2 and (tagged[i-2][1] in ('Josa') and (tagged[i-3][1] in ('Noun')))) :
+                    adjectives.append(tagged[i-3][0]+tagged[i-2][0]+tagged[i-1][0] + word)
+                    CheckSentence = True
+                else :
+                    adjectives.append(tagged[i-1][0] + word)
+                    CheckSentence = True
+                    
+            elif(i > 0 and (tagged[i-1][1] in ('Noun') and not(tagged[i-1][0] in ('개','꺼져','뭐')))) :
+                adjectives.append(tagged[i-1][0] + word)
+                CheckSentence = True
+                
+            elif(i > 1 and (tagged[i-1][1] in ('Josa') and (tagged[i-2][1] in ('Noun')))) :
+                adjectives.append(tagged[i-2][0] + tagged[i-1][0] + word)
+                CheckSentence = True
+                
+            else :
+                adjectives.append(word)
+                CheckSentence = True
+                
+            if(i < len(tagged)-2 and tagged[i+1][1] in ('Verb') and tagged[i+2][1] in ('Verb')) :
+                adjectives.append(tagged[i+1][0] + tagged[i+2][0])
+            elif(i < len(tagged)-1 and tagged[i+1][1] in ('Verb')) :
+                adjectives.append(tagged[i+1][0])
+        
+                
+        elif(i == 0 and tag == 'Verb'):
+            if(tagged[i+1][1] in ('Verb')):
+                adjectives.append(word + tagged[i+1][0])
+            else :
+                adjectives.append(word)
+                
+        if tag == 'Eomi' :
+            if( i > 0 and (tagged[i-1][1] in ('Noun'))) :
+                adjectives.append(tagged[i-1][0] + word)
+                CheckSentence = True
+                
+        joined_string = ''.join(adjectives)
+        if(joined_string !='') :
+            adjectives_r.append(joined_string)
+    print(adjectives_r)
+    count = len(adjectives_r)
     print(count)
-
 
 
 
@@ -96,7 +143,7 @@ def analyze_sentiment(content,id):
         neutral_scores_p = []
 
 
-        for verb in adjectives:
+        for verb in adjectives_r:
             data = {
                 "content": verb
             }
@@ -105,7 +152,7 @@ def analyze_sentiment(content,id):
             if rescode == 200:
                 jsonD = response.json()
                 print(f"감정 분석 결과 for '{verb}': ", jsonD)
-                if((jsonD['document']['confidence']['neutral']) < 0.30) :
+                if((jsonD['document']['confidence']['neutral']) < 2) :
                     negative_scores.append(jsonD['document']['confidence']['negative'])
                     positive_scores.append(jsonD['document']['confidence']['positive'])
                     neutral_scores.append(jsonD['document']['confidence']['neutral'])
@@ -116,6 +163,8 @@ def analyze_sentiment(content,id):
                 print()
             else:
                 print("Error: " + response.text)
+                
+
                 
         if(len(negative_scores) != 0 ):        
             average_negative = np.mean(negative_scores)
