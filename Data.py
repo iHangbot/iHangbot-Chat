@@ -19,7 +19,7 @@ import time
 
 # 대화 기록을 저장할 리스트
 conversation = [
-    {"role": "user", "content": "어린아이말투로 친절하게 꼭 반말로 대화해줘,","date":" ","username":"test123"}
+    {"role": "user", "content": "어린아이말투로 꼭 친절하게 친구처럼 대화해줘,","date":" ","username":"test123"}
 ]
 
 # 감정 분석을 저장할 리스트
