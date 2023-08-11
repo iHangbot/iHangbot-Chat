@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = 'http://localhost:8079/api/chat/test123'
+url = 'http://localhost:8079/api/chat/test122'
 headers = {'Content-Type': 'application/json'}
 
 while (True):

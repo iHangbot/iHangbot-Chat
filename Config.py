@@ -16,7 +16,7 @@ import numpy as np
 import threading
 import time
 
-API_KEY = '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'
+API_KEY = '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'
 openai.api_key = API_KEY
 
 

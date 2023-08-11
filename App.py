@@ -29,52 +29,54 @@ def job():
         Utils.print_analyze_data
         Utils.print_category
         Utils.print_conversation
+    
+        for id in Data.IdArray:
 
 
-
-        #키워드 분석 결과 전송
-        content_list = [data["content"] for data in Data.conversation[1:]]
-        merged_content = "\n".join(content_list)
-        Analyze.extract_keywords(merged_content,id)
-        Utils.print_key_word()
-        
-        url='http://52.79.225.144:8080/keyword/getKeyWord'
-        json_data = json.dumps(Data.key_word[2:])
-        print(json_data)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
-        print(response)       
-        if response.status_code == 200:  # 요청이 성공했을 경우
-            print('데이터 전송 성공')
-        else:
-            print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
-            print('오류 내용:', response.text)  # 오류 내용 출력
+            #키워드 분석 결과 전송
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+            merged_content = "\n".join(content_list)
+            Analyze.extract_keywords(merged_content,id)
+            Utils.print_key_word()
             
+            url='http://52.79.225.144:8080/keyword/getKeyWord'
+            filtered_data = [item for item in Data.key_word if item.get("username") == id]
+            json_data = json.dumps(filtered_data)
+            print(json_data)
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
+            print(response)       
+            if response.status_code == 200:  # 요청이 성공했을 경우
+                print('데이터 전송 성공')
+            else:
+                print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
+                print('오류 내용:', response.text)  # 오류 내용 출력
+                
+                
+                
+                
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+            merged_content = "\n".join(content_list)    
+            #주제 분석 결과 전송
+            try:
+                Analyze.classify_document(merged_content,id)
+                Utils.print_category()
+            except Exception as e:
+                print("오류 내용 : ", str(e))
+            #print_category()    
             
-            
-            
-            
-        #주제 분석 결과 전송
-        content_list = [data["content"] for data in Data.conversation[1:]]
-        merged_content = " ".join(content_list)
-        try:
-            Analyze.classify_document(merged_content,id)
-            Utils.print_category()
-        except Exception as e:
-            print("오류 내용 : ", str(e))
-        #print_category()    
-        
-        url='http://52.79.225.144:8080/keyword/getConcern'
-        json_data = json.dumps(Data.Category[1:])
-        print(json_data)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
-        print(response)
-        if response.status_code == 200:  # 요청이 성공했을 경우
-            print('데이터 전송 성공')
-        else:
-            print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
-            print('오류 내용:', response.text)  # 오류 내용 출력
+            url='http://52.79.225.144:8080/keyword/getConcern'
+            filtered_data = [item for item in Data.Category if item.get("username") == id]
+            json_data = json.dumps(filtered_data)
+            print(json_data)
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
+            print(response)
+            if response.status_code == 200:  # 요청이 성공했을 경우
+                print('데이터 전송 성공')
+            else:
+                print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
+                print('오류 내용:', response.text)  # 오류 내용 출력
 
 
 
@@ -111,7 +113,7 @@ def repost():
     print(report)
     
     messages_p = [
-    {"role": "system", "content": report},
+    {"role": "user", "content": report},
     ]
     
     completion = openai.ChatCompletion.create(
@@ -147,6 +149,9 @@ def repost():
 def chat(id):
     data = request.json
     user_input = data.get('string')  # 사용자 입력 받기
+    Data.Add_Id(id)
+    Data.list_all_ids()
+    
     print("수신 완료")
    
     if str(user_input).lower() == "1":  
@@ -168,13 +173,14 @@ def chat(id):
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "3":
-        content_list = [data["content"] for data in Data.conversation[1:]]
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
         merged_content = "\n".join(content_list)
         Analyze.extract_keywords(merged_content,id)
         Utils.print_key_word()
         
         url='http://52.79.225.144:8080/keyword/getKeyWord'
-        json_data = json.dumps(Data.key_word[2:])
+        filtered_data = [item for item in Data.key_word if item.get("username") == id]
+        json_data = json.dumps(filtered_data)
         print(json_data)
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
@@ -187,8 +193,8 @@ def chat(id):
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "4":
-        content_list = [data["content"] for data in Data.conversation[1:]]
-        merged_content = " ".join(content_list)
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+        merged_content = "\n".join(content_list)    
         try:
             Analyze.classify_document(merged_content,id)
             Utils.print_category()
@@ -197,7 +203,8 @@ def chat(id):
         #print_category()    
         
         url='http://52.79.225.144:8080/keyword/getConcern'
-        json_data = json.dumps(Data.Category[1:])
+        filtered_data = [item for item in Data.Category if item.get("username") == id]
+        json_data = json.dumps(filtered_data)
         print(json_data)
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
@@ -222,21 +229,15 @@ def chat(id):
     # 사용자 입력을 대화 기록에 추가
     Data.conversation.append({"role": "user", "content": user_input, "date": time, "username":id})
     
-    if len(Data.conversation) >=3:
-        messages_p = [
-            {key: value for key, value in Data.conversation[0].items() if key != "date" and key != "username"},
-            {key: value for key, value in Data.conversation[-2].items() if key != "date" and key != "username"},
-            {key: value for key, value in Data.conversation[-1].items() if key != "date" and key != "username"}
-        ]
-    else:
-        messages_p = [{key: value for key, value in message.items() if key != "date" and key != "username"} for message in Data.conversation]
-
+    messages_p =[{'role':Data.conversation[0]['role'] , 'content':Data.conversation[0]['content']}] + [{'role':item['role'] , 'content':item['content']} for item in Data.conversation if item['username'] == id]
+    
     completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=messages_p,
-    temperature=0,
-    frequency_penalty=2.0
+    temperature=0.15,
+    frequency_penalty=2.0,
     )
+    print(messages_p)
 
     
     Analyze.analyze_sentiment(user_input,id)
@@ -255,6 +256,7 @@ def chat(id):
 
     # GPT의 응답을 대화 기록에 추가
     response = completion['choices'][0]['message']['content']
+    Data.conversation.append({"role": "assistant", "content": response, "date": time, "username":id})
     
 
     print("\nGPT: " + response+"\n")  # GPT 응답 출력
