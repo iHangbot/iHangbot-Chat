@@ -9,7 +9,7 @@ from collections import Counter
 from datetime import datetime
 import time
 import requests
-from flask import Flask, request,jsonify
+from flask import Flask,request,jsonify
 from multiprocessing import Process
 from konlpy.tag import Okt
 import numpy as np
@@ -29,12 +29,13 @@ def job():
         Utils.print_analyze_data
         Utils.print_category
         Utils.print_conversation
+        time = Utils.call_time()
     
         for id in Data.IdArray:
 
 
             #키워드 분석 결과 전송
-            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
             merged_content = "\n".join(content_list)
             Analyze.extract_keywords(merged_content,id)
             Utils.print_key_word()
@@ -55,7 +56,7 @@ def job():
                 
                 
                 
-            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
             merged_content = "\n".join(content_list)    
             #주제 분석 결과 전송
             try:
@@ -77,10 +78,14 @@ def job():
             else:
                 print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
                 print('오류 내용:', response.text)  # 오류 내용 출력
+            Data.key_word.clear()
+            Data.Category.clear()
+            
 
 
 
-schedule.every().day.at("00:00").do(job)
+
+schedule.every().day.at("23:50").do(job)
 
 
 
@@ -147,6 +152,7 @@ def repost():
 
 @app.route('/api/chat/<id>', methods=['POST'])
 def chat(id):
+    time = Utils.call_time()
     data = request.json
     user_input = data.get('string')  # 사용자 입력 받기
     Data.Add_Id(id)
@@ -173,34 +179,35 @@ def chat(id):
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "3":
-        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['username'] == id]
+        
         merged_content = "\n".join(content_list)
+        
         Analyze.extract_keywords(merged_content,id)
         Utils.print_key_word()
         
         url='http://52.79.225.144:8080/keyword/getKeyWord'
-        filtered_data = [item for item in Data.key_word if item.get("username") == id]
+        filtered_data = [item for item in Data.key_word if (item.get("username") == id and item.get("time") == time)]
         json_data = json.dumps(filtered_data)
         print(json_data)
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
-        print(response)       
+        response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기      
         if response.status_code == 200:  # 요청이 성공했을 경우
             print('데이터 전송 성공')
         else:
             print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
             print('오류 내용:', response.text)  # 오류 내용 출력
+        Data.key_word.clear()
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "4":
-        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id]
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
         merged_content = "\n".join(content_list)    
         try:
             Analyze.classify_document(merged_content,id)
             Utils.print_category()
         except Exception as e:
             print("오류 내용 : ", str(e))
-        #print_category()    
         
         url='http://52.79.225.144:8080/keyword/getConcern'
         filtered_data = [item for item in Data.Category if item.get("username") == id]
@@ -214,10 +221,7 @@ def chat(id):
         else:
             print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
             print('오류 내용:', response.text)  # 오류 내용 출력
-            
-         
-            
-            
+        Data.Category.clear()
         return jsonify({'message': response}), 204
     
 

@@ -49,7 +49,7 @@ def analyze_sentiment(content,id):
         adjectives = []
         
         if tag == 'Adjective':
-            if i > 0 and (tagged[i-1][1] in ('Adverb','VerbPrefix')) :
+            if i > 0 and (tagged[i-1][1] in ('Adverb','VerbPrefix')) : #부사, #접두사
                 if(i > 1 and (tagged[i-2][1] in ('Noun') and not(tagged[i-2][0] in ('개','꺼져','뭐')))) :
                     adjectives.append(tagged[i-2][0]+tagged[i-1][0] + word)
                     CheckSentence = True
@@ -71,8 +71,8 @@ def analyze_sentiment(content,id):
             else :
                 adjectives.append(word)
                 CheckSentence = True
-                
-                
+        
+        
         if tag == 'Verb' and not(tagged[i-1][1] in ('Verb')):
             if (i > 0 and (tagged[i-1][1] in ('Adverb','VerbPrefix'))) :
                 if(i > 1 and (tagged[i-2][1] in ('Noun'))) :
@@ -216,7 +216,7 @@ def analyze_sentiment(content,id):
         
         
 def extract_keywords(text,id):
-    key_path = 'C:/Users/yechan/gpt-3/service_account_key.json'
+    key_path = 'service_account_key.json'
     time = Utils.call_time()
     
     # 서비스 계정 키를 사용하여 Credentials 객체 생성
