@@ -35,7 +35,7 @@ def job():
 
 
             #키워드 분석 결과 전송
-            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['date'] == time]
             merged_content = "\n".join(content_list)
             Analyze.extract_keywords(merged_content,id)
             Utils.print_key_word()
@@ -56,7 +56,7 @@ def job():
                 
                 
                 
-            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
+            content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['date'] == time]
             merged_content = "\n".join(content_list)    
             #주제 분석 결과 전송
             try:
@@ -179,7 +179,7 @@ def chat(id):
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "3":
-        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['username'] == id]
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['date'] == time]
         
         merged_content = "\n".join(content_list)
         
@@ -187,7 +187,7 @@ def chat(id):
         Utils.print_key_word()
         
         url='http://52.79.225.144:8080/keyword/getKeyWord'
-        filtered_data = [item for item in Data.key_word if (item.get("username") == id and item.get("time") == time)]
+        filtered_data = [item for item in Data.key_word if (item.get("username") == id)]
         json_data = json.dumps(filtered_data)
         print(json_data)
         headers = {'Content-Type': 'application/json'}
@@ -201,7 +201,7 @@ def chat(id):
         return jsonify({'message': response}), 204
             
     if str(user_input).lower() == "4":
-        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['time'] == time]
+        content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['date'] == time]
         merged_content = "\n".join(content_list)    
         try:
             Analyze.classify_document(merged_content,id)
