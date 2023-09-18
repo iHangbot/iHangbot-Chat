@@ -42,7 +42,7 @@ def analyze_sentiment(content,id):
     tagged = okt.pos(content)
     print(tagged)
 
-    # 태그가 'Adjective' , 'Noun'+'Josa'+'Verb' , 'Noun'+'Verb'인 단어들만 추출
+    # 태그가 'Adjective' , 'Noun'+'Josa'+'Verb' , 'Noun'+'Verb'인 단어들만 추출 
     adjectives_r = []
     for i in range(len(tagged)) :
         word, tag = tagged[i]
@@ -104,7 +104,7 @@ def analyze_sentiment(content,id):
         
                 
         elif(i == 0 and tag == 'Verb'):
-            if(tagged[i+1][1] in ('Verb')):
+            if(i < len(tagged)-1 and tagged[i+1][1] in ('Verb')):
                 adjectives.append(word + tagged[i+1][0])
             else :
                 adjectives.append(word)
@@ -270,4 +270,7 @@ def classify_document(text,id):
             Data.Category.append({"category":name , "confidence":category.confidence,"date":time, "username":id})
     else:
         print('No categories found.')
+        
+        
+    
 
