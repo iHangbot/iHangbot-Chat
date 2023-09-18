@@ -56,6 +56,18 @@ def job():
                 
                 
                 
+        
+            
+def job2():
+    
+        Utils.print_conversation
+        Utils.print_analyze_data
+        Utils.print_category
+        Utils.print_conversation
+        time = Utils.call_time()
+    
+        for id in Data.IdArray:
+                
             content_list = [data["content"] for data in Data.conversation[1:] if data["role"] == "user" and data['username'] == id and data['date'] == time]
             merged_content = "\n".join(content_list)    
             #주제 분석 결과 전송
@@ -80,12 +92,11 @@ def job():
                 print('오류 내용:', response.text)  # 오류 내용 출력
             Data.key_word.clear()
             Data.Category.clear()
-            
-
 
 
 
 schedule.every().day.at("23:50").do(job)
+schedule.every().week.at("23:50").do(job2)
 
 
 
