@@ -225,47 +225,47 @@ def chat(id):
         return jsonify({'message': response}), 204
     
 
-
-
-
-    time = Utils.call_time()
-
-    # 사용자 입력을 대화 기록에 추가
-    Data.conversation.append({"role": "user", "content": user_input, "date": time, "username":id})
-    
-    messages_p =[{'role':Data.conversation[0]['role'] , 'content':Data.conversation[0]['content']}] + [{'role':item['role'] , 'content':item['content']} for item in Data.conversation if item['username'] == id]
-    
-    completion = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=messages_p,
-    temperature=0.15,
-    frequency_penalty=2.0,
-    )
-    print(messages_p)
-
-    
-    Analyze.analyze_sentiment(user_input,id)
-    
-    url='http://52.79.225.144:8080/sentiment/getData' # URL 변경 해줘야해요.......
-    json_data = json.dumps(Data.analyze_data[-1])
-    headers = {'Content-Type': 'application/json'}
-    response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
-    print(json_data)
-    if response.status_code == 200:  # 요청이 성공했을 경우
-        print('데이터 전송 성공')
     else:
-        print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
-        print('오류 내용:', response.text)  # 오류 내용 출력  
-    
 
-    # GPT의 응답을 대화 기록에 추가
-    response = completion['choices'][0]['message']['content']
-    Data.conversation.append({"role": "assistant", "content": response, "date": time, "username":id})
-    
 
-    print("\nGPT: " + response+"\n")  # GPT 응답 출력
+        time = Utils.call_time()
+
+        # 사용자 입력을 대화 기록에 추가
+        Data.conversation.append({"role": "user", "content": user_input, "date": time, "username":id})
+        
+        messages_p =[{'role':Data.conversation[0]['role'] , 'content':Data.conversation[0]['content']}] + [{'role':item['role'] , 'content':item['content']} for item in Data.conversation if item['username'] == id]
+        
+        completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages_p,
+        temperature=0.15,
+        frequency_penalty=2.0,
+        )
+        print(messages_p)
+
+        
+        Analyze.analyze_sentiment(user_input,id)
+        
+        url='http://52.79.225.144:8080/sentiment/getData' # URL 변경 해줘야해요.......
+        json_data = json.dumps(Data.analyze_data[-1])
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(url, data=json_data, headers=headers)  # POST 요청 보내기
+        print(json_data)
+        if response.status_code == 200:  # 요청이 성공했을 경우
+            print('데이터 전송 성공')
+        else:
+            print('데이터 전송 실패:', response.status_code)  # 요청 실패 시 상태 코드 출력
+            print('오류 내용:', response.text)  # 오류 내용 출력  
+        
+
+        # GPT의 응답을 대화 기록에 추가
+        response = completion['choices'][0]['message']['content']
+        Data.conversation.append({"role": "assistant", "content": response, "date": time, "username":id})
+        
+
+        print("\nGPT: " + response+"\n")  # GPT 응답 출력
     
-    return jsonify({'message': response}), 200
+        return jsonify({'message': response}), 200
 
 if __name__ == '__main__':
     from waitress import serve
